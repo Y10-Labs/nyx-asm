@@ -1,0 +1,46 @@
+; comments start with ; (single line)
+
+; 3 oprand instructions
+; add reg_s2 and reg_s1 and store in reg_dst
+add[.flags] reg_dst, reg_s2, reg_s1
+; the .flags part is optional
+; flags can be any combination of: f,s,n,z,c
+; example:
+and.fc r13, r2, r1
+
+; .flags and reg_dst are must for all instructions
+; except hlt, for which there should be no oprands
+mul[.flags] reg_dst, reg_s2 reg_s1
+or[.flags] reg_dst, reg_s2, reg_s1
+; not will also take 3 inputs(it will ignore the 3rd one)
+not[.flags] reg_dst, reg_s2, reg_s1
+
+; bsh is a barrel shift
+; the second argument is #imm4 is a 4-bit number
+; if it is not 4-bit generate a error
+; a immediate always starts with #
+; it can be in hex/dec/binary
+bsh[.flags] reg_dst, #imm4, reg_s1
+
+; 2 oprand instructions
+; jmp takes 2 oprands, the first one is ignored
+; the second one must be label name
+; labels always begin with a .
+jmp[.flags] reg, .label
+
+; even though ldi can take flags
+; the flags are ignored, 
+; so generate a warning if they are present
+; the second argument is #imm10 is a 10-bit number
+; if it is not 10-bit generate a error
+ldi reg_dst, #imm10
+
+; ldb must have either f or s(not both at the same time!) as it's flag
+; flag is not optional for ldb
+ldb.[fs] reg_dst, reg_s2, reg_s1
+
+st[.flags] reg_dst, reg_s2, reg_s1
+
+; 0-oprand instruction
+; must have no oprands, generate errors otherwise
+hlt

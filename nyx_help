@@ -1,0 +1,7 @@
+options:
+-eX: use extended assembly
+-O[N]: optimize lvl N
+-o: output file
+-s: output assembly(only in -eX mode)
+-pv: output ins data
+-pvf: output ins data to file

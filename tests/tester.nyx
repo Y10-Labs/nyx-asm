@@ -1,0 +1,23 @@
+; pad initially
+; nop
+add r15, r15, r15
+add r15, r15, r15
+
+ldi r0, #4 ; load 4
+ldi r1, #1 ; load 1
+; calculate 2*r0
+.loop:
+sub r0, r0, r1
+
+; jump if done
+beq r14, .done
+add r15, r15, r15 ; nop
+add r15, r15, r15 ; nop
+
+; otherwise keep looping
+jmp r15, .loop
+add r15, r15, r15
+add r15, r15, r15
+
+.done:
+hlt

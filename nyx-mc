@@ -1,0 +1,4 @@
+#!/bin/sh
+# lumen core arch, nyx assembler
+
+python3 ./nyx.py $@

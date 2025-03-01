@@ -1,0 +1,43 @@
+; comments start with ; (single line)
+; .label:
+; 3 oprand instructions
+; r3 = r2 + r1
+add r3, r2, r1
+; flags can be any combination of: f,s,n,z,c
+; example:
+and.c r13, r2, r1
+mul r10, r4, r2
+or r6, r7, r8
+; not will also take 3 inputs(it will ignore the 3rd one)
+not r2, r5, r15
+
+; bsh is a barrel shift
+; the second argument is #imm4 is a 4-bit number
+; if it is not 4-bit generate a error
+; a immediate always starts with #
+; it can be in hex/dec/binary
+bsh r10, #4, r3
+.label2:
+; 2 oprand instructions
+; jmp takes 2 oprands, the first one is ignored
+; the second one must be label name
+; labels always begin with a .
+jmp.nz r15, .label1
+jmp.z r11, .label2
+; even though ldi can take flags
+; the flags are ignored and,
+; the second argument is #imm10 is a 10-bit number
+ldi r0, #0x1F
+
+; ldb must have either f or s(not both at the same time!) as it's flag
+; flag is not optional for ldb
+ldb.f r11, r2, r0
+
+str r14, r0, r0
+
+; 0-oprand instruction
+; must have no oprands, generate errors otherwise
+hlt
+
+hlt
+.label1:
