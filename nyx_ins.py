@@ -161,14 +161,14 @@ class ins:
                 print(f"{error_prefix}: mov must have 2 oprands")
                 return False
             self.opcode = 'add'
-            self.src_a = ins.sanitize_register(oprands_lst[0], line_no)
+            self.src_a = ins.sanitize_register(oprands_lst[1], line_no)
             self.src_b = ins.ZERO_REG
-            self.dst = ins.sanitize_register(oprands_lst[1], line_no)
+            self.dst = ins.sanitize_register(oprands_lst[0], line_no)
             if not self.src_a:
-                print(f"{error_prefix}: invalid register {oprands_lst[0]}")
+                print(f"{error_prefix}: invalid register {oprands_lst[1]}")
                 return False
             if not self.dst:
-                print(f"{error_prefix}: invalid register {oprands_lst[1]}")
+                print(f"{error_prefix}: invalid register {oprands_lst[0]}")
                 return False
             self.comment = f'mov {self.dst}, {self.src_a}'
             return True
