@@ -1,7 +1,6 @@
-; pad initially
-; nop
-add r15, r15, r15
-add r15, r15, r15
+; initial pad
+nop
+nop
 
 ldi r0, #4 ; load 4
 ldi r1, #1 ; load 1
@@ -11,13 +10,12 @@ sub r0, r0, r1
 
 ; jump if done
 beq r14, .done
-add r15, r15, r15 ; nop
-add r15, r15, r15 ; nop
+nop
+nop
 
 ; otherwise keep looping
 jmp r15, .loop
-add r15, r15, r15
-add r15, r15, r15
-
+nop
+nop
 .done:
 hlt

@@ -22,6 +22,7 @@ class ins:
     MODE_IMM = 1
 
     NOP = 0
+    ZERO_REG = 'r15'
 
     # maps register names to it's hex codes
     REG_BITS = {
@@ -42,6 +43,11 @@ class ins:
         "r14":0xe,
         "r15":0xf
     }
+
+    INS_EX_LST = [
+        'mov',
+        'cmp'
+    ]
 
     # maps instructions to their code
     INS_BITS = {
@@ -80,12 +86,94 @@ class ins:
         self.isLabel: bool = False
         self.label: str | None = None
         self.line_no: int = 0
+        self.comment: str = ''
 
     def sanitize_register(register, line_no:int):
         if register not in ins.REG_BITS.keys():
             print(f'Error: at line {line_no}: {register} is not a valid register name')
             return None
         return register
+
+    def check_eX_ins(self, oprands_lst:List[str], line_no):
+        # take 2/3 arguments
+
+        error_prefix = f'Error: at line {line_no}'
+        
+        if self.opcode == 'nop':
+            self.opcode = 'add'
+            self.src_a = ins.ZERO_REG
+            self.src_b = ins.ZERO_REG
+            self.dst = ins.ZERO_REG
+            self.flags = None
+            self.comment = 'nop'
+            return True
+        
+        if self.opcode == 'cmp':
+            self.opcode = 'sub'
+            
+            if len(oprands_lst) != 2:
+                print(f"{error_prefix}: cmp must have 2 oprands")
+                return False
+            
+            self.src_a = ins.sanitize_register(oprands_lst[1], line_no)
+            self.src_b = ins.sanitize_register(oprands_lst[0], line_no)
+            if not self.src_a:
+                print(f"{error_prefix}: invalid register {oprands_lst[1]}")
+                return False
+            if not self.src_b:
+                print(f"{error_prefix}: invalid register {oprands_lst[0]}")
+                return False
+            self.dst = ins.ZERO_REG
+            self.comment = f'cmp {self.src_b}, {self.src_a}'
+            return True
+        
+        if self.opcode == 'test':
+            self.opcode = 'add'
+
+            if len(oprands_lst) != 1:
+                print(f"{error_prefix}: test must have a oprands")
+                return False
+            
+            self.src_a = ins.sanitize_register(oprands_lst[0], line_no)
+            if not self.src_a:
+                print(f"{error_prefix}: invalid register {oprands_lst[0]}")
+                return False
+            self.src_b = ins.ZERO_REG
+            self.dst = ins.ZERO_REG
+            self.comment = f'test {self.src_a}'
+            return True
+
+        if self.opcode in ['beq', 'jmp', 'blt']:
+            # only the label is present
+            if len(oprands_lst) == 1:
+                if not oprands_lst[0].startswith('.'):
+                    print(f"{error_prefix}: the first operand for {self.opcode} must be a label (start with '.')")
+                    return False
+                self.dst = ins.ZERO_REG
+                self.label = oprands_lst[0]
+                self.isLabel = True
+                self.mode = ins.MODE_IMM
+                return True
+
+        if self.opcode == 'mov':
+            # only the label is present
+            if len(oprands_lst) != 2:
+                print(f"{error_prefix}: mov must have 2 oprands")
+                return False
+            self.opcode = 'add'
+            self.src_a = ins.sanitize_register(oprands_lst[0], line_no)
+            self.src_b = ins.ZERO_REG
+            self.dst = ins.sanitize_register(oprands_lst[1], line_no)
+            if not self.src_a:
+                print(f"{error_prefix}: invalid register {oprands_lst[0]}")
+                return False
+            if not self.dst:
+                print(f"{error_prefix}: invalid register {oprands_lst[1]}")
+                return False
+            self.comment = f'mov {self.dst}, {self.src_a}'
+            return True
+
+        return False
 
     def check_and_set_ins(self, oprands_lst:List[str], line_no):
         """
@@ -219,18 +307,21 @@ class ins:
         return True
 
     # returns False if error occured
-    def fromStr(self, asmline:str, line_no):
+    def fromStr(self, asmline:str, line_no, useExIns=False):
         # ins[.(fscnz)] reg, (reg(s2), imm, label), reg(s1)
 
         asmline = asmline.strip()
         find_brk = asmline.find(' ')
         if find_brk < 0:
-            if asmline != 'hlt':
+            if asmline not in ['hlt', 'nop']:
                 print(f"Error: at line {line_no}: Too few oprands for instruction!")
                 return False
-            else:
-                self.opcode = 'hlt'
-                return self.check_and_set_ins([], line_no)
+            elif useExIns:
+                self.opcode = asmline
+                if self.check_eX_ins([], line_no):
+                    return True
+            self.opcode = 'hlt'
+            return self.check_and_set_ins([], line_no)
         operation = asmline[0:find_brk]
         oprands = asmline[find_brk:].strip()
         self.flags = None
@@ -246,16 +337,22 @@ class ins:
 
         
         if self.opcode not in ins.INS_BITS.keys():
-            print(f'Error: at line {line_no}: no instruction named {self.opcode}.')
-            return False
+            if (useExIns and self.opcode not in ins.INS_EX_LST) or not useExIns:
+                print(f'Error: at line {line_no}: no instruction named {self.opcode}.')
+                return False
 
         oprands_lst = [s.strip() for s in oprands.split(',')]
 
+        if useExIns:
+            isExIns = self.check_eX_ins(oprands_lst, line_no)
+            if isExIns:
+                return True
+
         return self.check_and_set_ins(oprands_lst, line_no)
     
-    def create(asmline, line_no):
+    def create(asmline, line_no, useExIns=False):
         inst_val = ins()
-        ret_val = inst_val.fromStr(asmline, line_no)
+        ret_val = inst_val.fromStr(asmline, line_no, useExIns)
         if not ret_val:
             return None
         return inst_val
@@ -284,6 +381,36 @@ class ins:
         
         return ins.NOP
     
+    def asASM(self):
+        comment = ''
+        flags = ''
+        if self.flags:
+            flags = f'.{self.flags}'
+        if self.comment:
+            comment = f' ; {self.comment}'
+
+        if self.isLabel:
+            return f"{self.opcode}{flags} {self.dst}, {self.label}" + comment
+        
+        if self.opcode == 'hlt':
+            return f"hlt"
+        
+        # For immediate instructions (bsh, ldi)
+        if isinstance(self.src_b, int) or self.mode == self.MODE_IMM:
+            imm_repr = f"#{self.imm}"
+            
+            if self.opcode == 'bsh':
+                return f"{self.opcode}{flags} {self.dst}, {imm_repr}, {self.src_a}" + comment
+            else:  # ldi
+                return f"{self.opcode}{flags} {self.dst}, {imm_repr}" + comment
+        
+        # For standard 3-operand instructions
+        #if self.opcode in ['add', 'mul', 'or', 'not', 'ldb', 'st']:
+        #    return f"Instruction(opcode='{self.opcode}', flags='{self.flags}', dst='{self.dst}', src_b='{self.src_b}', src_a='{self.src_a}')"
+        
+        # Fallback for any other case
+        return f"{self.opcode}{flags} {self.dst}, {self.src_b}, {self.src_a}" + comment
+
     def __repr__(self):
         """
         Returns a string representation of the instruction.

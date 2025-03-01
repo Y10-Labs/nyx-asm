@@ -1,0 +1,25 @@
+; padding
+nop
+nop
+
+ldi r0, #4
+ldi r1, #4
+
+cmp r0, r1
+beq .if
+nop
+nop
+; else block
+add r2, r0, r1
+jmp .if_else_end
+nop
+nop
+.if:
+; swap
+mov r2, r1
+mov r1, r0
+mov r0, r2
+
+.if_else_end:
+hlt
+

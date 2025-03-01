@@ -8,15 +8,19 @@ parser = argparse.ArgumentParser()
 parser.add_argument('input', type=str, help='input nyx microcode file')
 parser.add_argument('-o', '--output', help='output binary file', default='a.out')
 parser.add_argument('-pv', '--parser_verbose', help='enable verbose output from parser', action="store_true")
+parser.add_argument('-eX', '--extended_isa', help='Use extended ISA', action="store_true")
+parser.add_argument('-s', '--asm_file', help='Output assembled file')
 args = parser.parse_args()
 
 asm = ''
 
 isParserVerbose = args.parser_verbose
-#isParserVerbose = True
-
+#isParserVerbose = False
 inputFile = args.input
-#inputFile = 'tester.nyx'
+#inputFile = 'tests/tester.nyx'
+useExIns = args.extended_isa
+#useExIns = True
+
 with open(inputFile) as f:
     asm = f.read()
 
@@ -47,7 +51,7 @@ def parseline(asmline : str, line_no):
                 return False
             labels[label] = ins_count
             return True
-    instruction = ins.create(asmline, line_no)
+    instruction = ins.create(asmline, line_no, useExIns)
     if instruction is None:
         return False
     ins_count += 1
@@ -71,7 +75,6 @@ if failed:
 for instruction in instruction_list:
     if not instruction.isLabel:
         continue
-    
     try:
         instruction.imm = labels[instruction.label]
     except KeyError:
@@ -90,6 +93,18 @@ if isParserVerbose:
         bitshex = "{0:#0{1}x}".format(bits,8)
         print(f'{pinscnt:02}:', instruction)
         pinscnt += 1
+
+if args.asm_file:
+    sinscnt = 0
+    sfiletxt = ''
+    for instruction in instruction_list:
+        if sinscnt in labels.values():
+            label_name = list(labels.keys())[list(labels.values()).index(sinscnt)]
+            sfiletxt += f'{label_name}:\n'
+        sfiletxt += instruction.asASM() + '\n'
+        sinscnt += 1
+    with open(args.asm_file, 'w') as f:
+        f.write(sfiletxt)
 
 if ins_count > 1024:
     print("Warning: program memory limit extended!")
