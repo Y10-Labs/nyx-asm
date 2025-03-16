@@ -46,13 +46,18 @@ class ins:
 
     INS_EX_LST = [
         'mov',
-        'cmp'
+        'cmp',
+        'test',
+        'lds',
+        'ldc',
+        'inc'
     ]
 
     # maps instructions to their code
     INS_BITS = {
         "add": NO_PIPELINE | ALU_ADDER | 0b00,
         "sub": NO_PIPELINE | ALU_ADDER | 0b01,
+        "adi": NO_PIPELINE | ALU_ADDER | 0b11,
         "bsh": NO_PIPELINE | ALU_OPT | 0b00,
         "and": NO_PIPELINE | ALU_OPT | 0b01,
         "or" : NO_PIPELINE | ALU_OPT | 0b10,
@@ -70,9 +75,8 @@ class ins:
     }
 
     FLAGS_BITS = {
-        "f":0b00,
-        "s":0b10,
-        "c":0b01,
+        "f":0b10,
+        "s":0b00,
     }
 
     def __init__(self):
@@ -117,11 +121,7 @@ class ins:
             
             self.src_a = ins.sanitize_register(oprands_lst[1], line_no)
             self.src_b = ins.sanitize_register(oprands_lst[0], line_no)
-            if not self.src_a:
-                print(f"{error_prefix}: invalid register {oprands_lst[1]}")
-                return False
-            if not self.src_b:
-                print(f"{error_prefix}: invalid register {oprands_lst[0]}")
+            if self.src_a is None or self.src_b is None:
                 return False
             self.dst = ins.ZERO_REG
             self.comment = f'cmp {self.src_b}, {self.src_a}'
@@ -135,12 +135,26 @@ class ins:
                 return False
             
             self.src_a = ins.sanitize_register(oprands_lst[0], line_no)
-            if not self.src_a:
-                print(f"{error_prefix}: invalid register {oprands_lst[0]}")
+            if self.src_a is None:
                 return False
             self.src_b = ins.ZERO_REG
             self.dst = ins.ZERO_REG
             self.comment = f'test {self.src_a}'
+            return True
+        
+        if self.opcode == 'inc':
+            self.opcode = 'adi'
+
+            if len(oprands_lst) != 1:
+                print(f"{error_prefix}: test must have a oprands")
+                return False
+            
+            self.src_b = ins.sanitize_register(oprands_lst[0], line_no)
+            if self.src_b is None:
+                return False
+            self.src_a = ins.ZERO_REG
+            self.dst = self.src_b
+            self.comment = f'inc {self.src_a}'
             return True
 
         if self.opcode in ['beq', 'jmp', 'blt']:
@@ -164,16 +178,30 @@ class ins:
             self.src_a = ins.sanitize_register(oprands_lst[1], line_no)
             self.src_b = ins.ZERO_REG
             self.dst = ins.sanitize_register(oprands_lst[0], line_no)
-            if not self.src_a:
-                print(f"{error_prefix}: invalid register {oprands_lst[1]}")
-                return False
-            if not self.dst:
-                print(f"{error_prefix}: invalid register {oprands_lst[0]}")
+            if self.src_a is None or self.dst is None:
                 return False
             self.comment = f'mov {self.dst}, {self.src_a}'
             return True
+        
+        if self.opcode in ['lds', 'ldc']:
+            if len(oprands_lst) != 2:
+                print(f"{error_prefix}: {self.opcode} takes 2 oprands")
+                return False
+            
+            if not oprands_lst[1].startswith('[') or not oprands_lst[1].endswith(']'):
+                print(f'{error_prefix}: {self.opcode} takes an address as argument')
+                return False
+            
+            self.flags = 'f' if self.opcode == 'ldc' else 's'
+            self.opcode = 'ldb'
+            self.src_a = ins.ZERO_REG
+            self.src_b = ins.sanitize_register(oprands_lst[1][1:-1], line_no)
+            self.dst = ins.sanitize_register(oprands_lst[0], line_no)
+            if (self.src_b is None) or (self.dst is None):
+                return False
+            return True
 
-        return False
+        return None
 
     def check_and_set_ins(self, oprands_lst:List[str], line_no):
         """
@@ -186,7 +214,7 @@ class ins:
             boolean: True(if successfull), False(if not successfull)
         """
         # Define valid opcodes by their operand count
-        three_oprands = ['add', 'sub', 'mul', 'or', 'not', 'and', 'bsh', 'ldb', 'str']
+        three_oprands = ['add', 'sub', 'adi', 'mul', 'or', 'not', 'and', 'bsh', 'ldb', 'str']
         label_ins = ['jmp', 'beq', 'blt']
         zero_oprands = ['hlt']
 
@@ -345,8 +373,8 @@ class ins:
 
         if useExIns:
             isExIns = self.check_eX_ins(oprands_lst, line_no)
-            if isExIns:
-                return True
+            if isExIns is not None:
+                return isExIns
 
         return self.check_and_set_ins(oprands_lst, line_no)
     

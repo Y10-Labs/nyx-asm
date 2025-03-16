@@ -1,0 +1,27 @@
+; padding
+nop
+nop
+
+; all registers zero
+
+; load x0, y0
+inc r13
+lds r0, [r13] ; load from 0
+lds r1, [r13] ; load from 1
+inc r13
+
+; load x1, y1
+inc r13
+lds r2, [r13] ; load from 2
+lds r3, [r13] ; load from 3
+inc r13
+
+; load x2, y2
+inc r13
+lds r4, [r13] ; load from 2
+lds r5, [r13] ; load from 3
+inc r13
+
+; calculate del x
+sub r6, 
+
