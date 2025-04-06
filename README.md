@@ -12,6 +12,7 @@
     - Arithmetic: Addition, subtraction, multiplication
     - Logical: AND, OR, NOT
     - Shift operations: Barrel shift
+
     It does multiplication by default. Based on instruction it does other operations and selects the desired one.
 * Instruction Decode unit: Decodes binary instructions into control signals
     - Handles opcode parsing, operand selection, and flag processing
@@ -109,6 +110,8 @@ Reference documentation for the assembly language.
 
 6. ldc: Load from framebuffer
 
+These were added later. We can use default ones but these can make it a bit easier to code.
+
 ### Instruction Format
 
 ```
@@ -116,6 +119,7 @@ opcode[.flags] dest, src1, src2 ; comment
 ```
 
 Flags:
+
     - f: Frame buffer access
     - s: Shifting bram access
 
