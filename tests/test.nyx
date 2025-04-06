@@ -27,7 +27,7 @@ jmp.z r11, .label2
 ; even though ldi can take flags
 ; the flags are ignored and,
 ; the second argument is #imm10 is a 10-bit number
-ldi r0, #0x1F
+ldi r0, #0xFF
 
 ; ldb must have either f or s(not both at the same time!) as it's flag
 ; flag is not optional for ldb
