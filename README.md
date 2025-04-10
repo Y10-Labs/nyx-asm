@@ -38,26 +38,6 @@ Options:
 
     - -s/--asm_file: Output assembled instructions in human-readable format
 
-2. emulation.py (Emulator)
-
-Simulates the processor for executing and testing programs.
-
-Features:
-
-    - Register file emulation (r0-r15)
-
-    - ALU operations with flag handling
-
-    - Pipeline simulation for multi-cycle operations:
-
-        - Multiplication (3 cycles)
-
-        - Load/Store (2 cycles)
-
-        - Jump (2 cycles)
-
-    - Framebuffer with 1024 entries
-
 3. nyx_ins.py (Instruction Encoding)
 
 Defines the instruction format and encoding for the ISA.
