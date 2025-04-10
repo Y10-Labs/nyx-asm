@@ -38,7 +38,7 @@ Options:
 
     - -s/--asm_file: Output assembled instructions in human-readable format
 
-3. nyx_ins.py (Instruction Encoding)
+2. nyx_ins.py (Instruction Encoding)
 
 Defines the instruction format and encoding for the ISA.
 
@@ -58,7 +58,7 @@ Instruction Format:
 
         - Destination Register: Bits 0-4
 
-4. assembly_docs.txt (Assembly Language Reference)
+3. assembly_docs.txt (Assembly Language Reference)
 
 Reference documentation for the assembly language.
 
