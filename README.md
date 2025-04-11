@@ -95,7 +95,7 @@ These were added later. We can use default ones but these can make it a bit easi
 ### Instruction Format
 
 ```
-opcode[.flags] dest, src1, src2 ; comment
+opcode[.flags] dest, src2, src1 ; comment
 ```
 
 Flags:
@@ -114,7 +114,7 @@ Refer assembly-docs file for more details!
 1. Basic Arithmetic:
 ```
 add r1, r2, r3      ; r1 = r2 + r3
-sub r4, r5, r6      ; r4 = r5 - r6
+sub r4, r5, r6      ; r4 = r6 - r5
 mul r7, r8, r9      ; r7 = r8 * r9
 ```
 
