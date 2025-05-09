@@ -8,7 +8,9 @@ where t is the triangle id; x, y, z are the triangle vertices after projecting. 
 
 For now there is no transparent id. Later we can add them and change inputs/outputs.
 
-For each pixel, we check if it is inside triangles. Once it goes through all triangles, we give the outputs of which triangle the pixel (t) belongs, barycentric coordinates ($\lambda_1$, $\lambda_2$, $\lambda_3$)
+For each pixel, we check if it is inside triangles and we give the outputs of which triangle the pixel (t) belongs, barycentric coordinates ($\lambda_1$, $\lambda_2$, $\lambda_3$). Based on value of z(depth), it writes again on that pixel or else it remains same.
+
+Also while checking for each vertical strip, first we see if bounding of triangle has some common part in this strip. Checking this is easy as we just need to see $x_{min}$ and $x_{max}$. Then we need to find the end points of this strip with triangle. The pixels between these end points are in triangle. 
 
 ## Some useful results
 * Point P = $\lambda_1 V_1 + \lambda_2 V_2 + \lambda_3 V_3$ where $V_1, V_2, V_3$ are vertices of the triangle (projected one) then 
@@ -30,7 +32,9 @@ $E(P) < 0$ if P is to the left side
 
 So if point is inside the triange ABC, 
 
-$$sgn(E_{AB}(P)) = sgn(E_{BC}(P)) = sgn(E_{CA}(P))$$
+$$sgn(E_{AB}(P)) = sgn(E_{BC}(P)) = sgn(E_{CA}(P))$$.
+
+We make sure we take triangle coordinates in clockwise direction so we need to check if all are positive for point to be inside triangle.
 
 * The barycentric coordinates are computed as
 
@@ -55,9 +59,9 @@ First calculate the $z_P$ of this triangle and then similarly calculate for next
 
 $$ E_{AB}' = (x_P - x_A)(y_B - y_A) - ((y_P-k) - y_A)(x_B - x_A) = E_{AB} + k * (x_B - x_A) $$
 
-Similarly when one vertical processing is done, we can keep y constant and go to increase x by 1 unit (=k).
+<!--- Similarly when one vertical processing is done, we can keep y constant and go to increase x by 1 unit (=k).
 
-$$ E_{AB}' = ((x_P+k) - x_A)(y_B - y_A) - (y_P - y_A)(x_B - x_A) = E_{AB} + k * (y_B - y_A) $$
+$$ E_{AB}' = ((x_P+k) - x_A)(y_B - y_A) - (y_P - y_A)(x_B - x_A) = E_{AB} + k * (y_B - y_A) $$ --->
 
 * In calculation of barycentric coordinates, the denominator is related to area of triangle. So we dont need to compute $\frac{1}{E_{AB}(C)}, \frac{1}{E_{BC}(A)}, \frac{1}{E_{CA}(B)}$ multiple times.
 
