@@ -1,0 +1,32 @@
+; do r1/r2
+
+add r13, r15, #15 ; r15 = 0, so r13 = r15 + 15 = 15, r13 is no. of bits(n)-1 (as 1 for sign)
+add r12, r15, r1 ; Q
+add r11, r15, r2 ; M
+add r9, r15, r15 ; A
+
+.label1:
+; bsh is default right
+; shift A left and append MSB of Q
+; then also left shift Q by 1
+bsh r10, #14, r12 
+and r10, r10, #1
+bsh r9, #14, r9 
+and r9, r9, #65535
+bsh r12, #14, r12 
+and r12, r12, #65535
+or r9, r10, r9
+jmp.n r9, .label2
+sub r9, r11, r9 ; A = A - M if A >= 0
+or r12, r12, #1; set LSB = 1
+jmp r9, .continue
+.label2 :
+add r9, r9, r11 ; A = A + M if A < 0
+.continue :
+and.n r12, r12, #65534 ; set LSB = 0 if A < 0
+
+sub r13, #1, r13 ; r13 = r13 - 1
+jmp.nz r9, .label1
+jmp r1, hlt  ;stop if it is done
+
+
