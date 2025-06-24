@@ -1,0 +1,55 @@
+; x is no. of vertical lines
+; assume i get data in clockwise order and 1st entry i get is xmin
+; r1 to keep track of x and r2 for triangle
+.x:
+.triangle:
+
+ldb.s r3, r1, r2 ; basically pop xt1 to r3
+sub r4, r3, r1 ; r4 = r1 - r3 = x - xt1
+jmp.n r0, .traingle ; jump if x < xt1 then skip traingle as it doesnt intersect
+; else if x>=xt1, then 
+ldb.s r5, r1, r2 ; basically pop xt2 to r4
+sub r6, r5, r1 ; r6 = r1 - r5 = x - xt2
+jmp.n r0, .label1 ; jump if x < xt2
+; else if x>=xt2, then 
+ldb.s r7, r1, r2 ; basically pop xt3 to r7
+sub r8, r7, r1 ; r8 = r1 - r7 = x - xt3
+jmp.n r0, .label2 ; jump if x < xt3
+; else if x>=xt3, then 
+jmp r0, .triangle ; if all are positive skip triangle
+.label2: ; => A -> (xt3,yt3)
+add r0, r15, r8 ; we dont need r4, r6 now so we reuse. After this step can reuse r8
+ldb.s r4, r1, r2 ; basically pop yt1 to r4 B is (r3, r4)
+ldb.s r6, r1, r2 ; basically pop yt2 to r6 C is (r5, r6)
+ldb.s r8, r1, r2 ; basically pop yt3 to r8 A is (r0+r1, r8)
+jmp r0, .continue1
+.label1: ; x > xt1, x < xt2
+ldb.s r7, r1, r2 ; basically pop xt3 to r7
+sub r8, r7, r1 ; r8 = r1 - r7 = x - xt3
+jmp.n r0, .label3 ; jump if x < xt3 => A -> (xt1,yt1)
+; else A -> (xt2,yt2)
+add r0, r15, r6 ; we dont need r4, r8 now so we reuse. After this step can reuse r6
+ldb.s r4, r1, r2 ; basically pop yt1 to r4 B is (r3, r4)
+ldb.s r8, r1, r2 ; basically pop yt2 to r8 A is (r0+r1, r8)
+add r5, r15, r7
+ldb.s r6, r1, r2 ; basically pop yt3 to r6 C as (r5,r6)
+jmp r0, .continue1
+.lable3: ; x > xt1, x < xt2, x < xt3 => A -> (xt1,yt1)
+add r0, r15, r4 ; we dont need r6, r8 now so we reuse. After this step can reuse r4
+ldb.s r8, r1, r2 ; basically pop yt1 to r8 A is (r0+r1, r8)
+add r3, r15, r7
+ldb.s r6, r1, r2 ; basically pop yt2 to r6 C as (r5,r6)
+ldb.s r4, r1, r2 ; basically pop yt3 to r4 B is (r3, r4)
+jmp r0, .continue1
+; by this step we have r0 = x - x_a, r8 = y_a, B is (r3, r4), C as (r5,r6)
+.continue1:
+; y1 in r9, y2 in r10
+
+
+sub r2, #1, r2 ; r2 = r2 - 1
+jmp.nz r2, .x ;traingle loop ends here if it is 0 or -
+jmp r2, .triangle 
+
+sub r1, #1, r1 ; r1 = r1 - 1
+jmp.nz r1, hlt ; rasterization is done if it is 0 or -
+jmp r1, .x 

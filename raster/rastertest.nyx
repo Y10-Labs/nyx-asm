@@ -1,0 +1,32 @@
+; x is no. of vertical lines
+; r1 to keep track of x and r2 for triangle
+.x:
+.triangle:
+
+ldb.s r3, r1, r2 ; basically pop xt1 to r3
+sub r4, r3, r1
+ldb.s r3, r1, r2 ; basically pop xt2 to r3
+sub r5, r3, r1
+ldb.s r3, r1, r2 ; basically pop xt3 to r3
+sub r6, r3, r1
+; check signs of r4, r5, r6 and based on it, choose A.
+mul r7, r4, r5
+jmp.n r4, .label1
+add r0, r15, r6
+jmp r0, .continue
+.label1:
+mul r7, r4, r6
+jmp.n r4, .label2
+add r0, r15, r5
+jmp r0, .continue
+.label2:
+add r0, r15, r4
+.continue:
+
+sub r2, #1, r2 ; r2 = r2 - 1
+jmp.nz r2, .x ;traingle loop ends here if it is 0 or -
+jmp r2, .triangle 
+
+sub r1, #1, r1 ; r1 = r1 - 1
+jmp.nz r1, hlt ; rasterization is done if it is 0 or -
+jmp r1, .x 
